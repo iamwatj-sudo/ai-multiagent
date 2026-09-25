@@ -1,0 +1,93 @@
+---
+export const prerender = false;
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { loadProfile } from '../lib/profile';
+const profile = loadProfile();
+
+// D7: static single page, 5 steps, status label as text only.
+// Status stays 'กำลังทดลอง' for every step until the owner confirms which steps
+// are actually done (OPEN_LOOPS L4) — never mark 'ทำแล้ว' without that answer.
+type Status = 'ทำแล้ว' | 'กำลังทดลอง';
+const steps: { id: string; title: string; status: Status; body: string[] }[] = [
+  {
+    id: 'survey',
+    title: '1. สำรวจระบบเดิม',
+    status: 'กำลังทดลอง',
+    body: [
+      'ทำรายการหน้า .aspx ทั้งหมด จุดที่พึ่ง ViewState / Session และ dependency ที่ผูกกันอยู่ เพื่อให้รู้ว่าอะไรย้ายก่อนได้โดยไม่กระทบส่วนอื่น',
+      'AI เป็นผู้ช่วยสรุปโค้ดและร่างรายการ แต่คนต้องเทียบรายการนั้นกับระบบที่รันอยู่จริง',
+    ],
+  },
+  {
+    id: 'extract',
+    title: '2. แยก logic ออกจาก code-behind',
+    status: 'กำลังทดลอง',
+    body: [
+      'ย้าย business logic ออกจาก code-behind ไปเป็น class ที่ทดสอบได้ และให้ทั้งหน้าเดิมกับหน้าใหม่เรียกใช้ของชุดเดียวกัน',
+    ],
+  },
+  {
+    id: 'strangler',
+    title: '3. Strangler route',
+    status: 'กำลังทดลอง',
+    body: [
+      'ตั้ง ASP.NET Core MVC ไว้ข้างระบบเดิม แล้วส่ง route ทีละกลุ่มไปฝั่งใหม่ ผู้ใช้ยังเข้า URL เดิมได้ และย้อนกลับได้ถ้ามีปัญหา',
+    ],
+  },
+  {
+    id: 'test',
+    title: '4. เทสต์เทียบผลลัพธ์',
+    status: 'กำลังทดลอง',
+    body: [
+      'ก่อนสลับ route ให้เทียบผลลัพธ์ของหน้าเดิมกับหน้าใหม่ด้วยข้อมูลชุดเดียวกัน ถ้ายังไม่ตรง ยังไม่สลับ',
+    ],
+  },
+  {
+    id: 'retire',
+    title: '5. ตัดของเก่า',
+    status: 'กำลังทดลอง',
+    body: [
+      'เมื่อ route ของส่วนนั้นย้ายครบและเทสต์ผ่าน จึงค่อยลบหน้าและโค้ดเดิมทีละส่วน ไม่ลบทีเดียวทั้งระบบ',
+    ],
+  },
+];
+
+const checklist = [
+  'อ่าน diff ที่ AI เสนอทุกบรรทัดก่อน merge',
+  'ไม่มี connection string ชื่อระบบ หรือข้อมูลจริงหลุดไปใน prompt หรือโค้ด',
+  'รันเทสต์เทียบผลกับหน้าเดิมแล้วผ่าน',
+  'สิทธิ์การเข้าถึงของ route ใหม่เท่ากับของเดิม',
+  'มีทางย้อนกลับไปหน้าเดิมได้ทันที',
+];
+---
+<BaseLayout title={`Playbook · ${profile.name}`} description={`Playbook: ${profile.headline}`}>
+  <article>
+    <header class="card">
+      <p class="draft">ฉบับกำลังเขียน</p>
+      <h1>Playbook: ย้าย Web Forms ไป ASP.NET Core MVC ทีละส่วน</h1>
+      <p>ถ้าคุณหยุดระบบเพื่อรื้อเขียนใหม่ไม่ได้ นี่คือลำดับที่ผมกำลังใช้อยู่ ผมจดไว้ระหว่างทาง แต่ละขั้นมีป้ายบอกสถานะตามจริง</p>
+      <p><a href="#checklist">ไปที่ checklist คนตรวจ</a></p>
+    </header>
+
+    {steps.map((s) => (
+      <section class="card" id={s.id} aria-labelledby={`${s.id}-title`}>
+        <h2 id={`${s.id}-title`}>{s.title}</h2>
+        <p class="status">สถานะ: {s.status}</p>
+        {s.body.map((b) => <p>{b}</p>)}
+      </section>
+    ))}
+
+    <section class="card" id="checklist" aria-labelledby="checklist-title">
+      <h2 id="checklist-title">Checklist คนตรวจ</h2>
+      <p>{profile.principle} — ก่อนปล่อยแต่ละส่วน ผมตรวจข้อเหล่านี้เสมอ</p>
+      <ul>
+        {checklist.map((c) => <li>{c}</li>)}
+      </ul>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .draft { display: inline-block; margin: 0; font-weight: 700; color: var(--text); background: var(--notice-bg); border: 1px solid var(--notice-border); border-radius: 999px; padding: 0.1rem 0.75rem; font-size: 0.9rem; }
+  .status { font-weight: 600; color: var(--text); margin-top: -0.25rem; }
+</style>
