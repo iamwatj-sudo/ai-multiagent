@@ -1,16 +1,18 @@
 ---
 export const prerender = false;
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { loadProfile } from '../lib/profile';
+const profile = loadProfile();
 ---
-<BaseLayout title="Contact">
+<BaseLayout title={`Contact · ${profile.name}`}>
   <section class="card">
     <h1>Contact</h1>
-    <p>ฟอร์มนี้โพสต์ไปที่ <code>POST /api/contact</code></p>
+    <p>ส่งข้อความถึงผมได้ทางฟอร์มนี้ — กรอกให้ครบทุกช่อง</p>
     <form id="contact-form">
       <label for="name">Name</label>
-      <input id="name" name="name" required maxlength="80" />
+      <input id="name" name="name" required maxlength="80" autocomplete="name" />
       <label for="email">Email</label>
-      <input id="email" name="email" type="email" required maxlength="120" />
+      <input id="email" name="email" type="email" required maxlength="120" autocomplete="email" />
       <label for="message">Message</label>
       <textarea id="message" name="message" rows="5" required maxlength="2000"></textarea>
       <p style="margin-top:1rem"><button type="submit">Send</button></p>

@@ -110,5 +110,15 @@ P0 A1–A3 + P1 A4 add up to about 35 min in total; all are frontend (Claude `fr
 | A2 | ✅ Done (2026-09-25) | `BaseLayout.astro`: `input, textarea { border-color: #6b7bab; }` → measured again: border vs card **3.31:1**, vs field **4.36:1** (was 1.07 / 1.41) · button/card borders unchanged (`#243056`) |
 | A3 | ✅ Done (2026-09-25) | `:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }` → the Send button shows a solid accent ring at 2px offset (`docs/screenshots/contact-focus-after.png`) · a full manual Tab walkthrough of the nav is still pending (shared browser issue, see caveat above) |
 | A1 | ✅ Done (2026-09-25) | `guestbook.astro` `load()` builds DOM with `textContent`/text nodes instead of `innerHTML` → the probe entry now shows as literal text `Demo <i data-e2e="probe">probe</i>`, `#entries i[data-e2e="probe"]` = none, demo entry still displays (`docs/screenshots/guestbook-escaped.png`). E2E step 13 / F1: **FAIL → PASS** (frontend). Raw HTML is still stored in the API; backend validation is optional defense in depth (OpenCode) |
-| — | `npm test` | 3 passed (public-site + smoke) after each change |
+| A4 | ✅ Done (2026-09-25) | `contact.astro`: API path copy replaced with visitor copy · `autocomplete="name"` / `"email"` (guestbook name too) |
+| A5 | ✅ Done (2026-09-25) | `guestbook.astro`: `#gb-status` (`role=status`) checks `res.ok` → whitespace name shows "Error: Name is required", success shows "Thanks for signing!" (Playwright) · dropped `aria-live` from `#entries` so screen readers don't re-read the whole list on every load · removed the `/api/guestbook` copy |
+| A6 | ✅ Done (2026-09-25) | default `description` in `BaseLayout` = "Personal branding site" · curl every page: `course` / `lab 0` / `/api/` = 0 |
+| F2 | ✅ Done (2026-09-25) | `profile.ts`: split out `parseProfile()` + lookahead `(?=^##\s|(?![\s\S]))` · new `tests/profile.test.ts` (RED → GREEN) · `/api/interests` returns all 3 items · About splits Bio into paragraphs, Home shows the first paragraph |
+| F3 | ✅ Resolved by content | `docs/PROFILE.md` has real content now (edited outside this session, not committed by Claude) |
+| F4 | ✅ Done (2026-09-25) | titles "Contact · name" / "Guestbook · name" |
+| F5 | ✅ Done (2026-09-25) | `.playwright-mcp/` in `.gitignore` |
+| A10 | ✅ Resolved | content is Thai now → `lang="th"` is correct |
+| — | `npm test` / `npm run build` | 6 passed (3 files) · build Complete · every page 200 |
+
+**Still open (P2):** A7 field-level errors (`aria-invalid` + `aria-describedby`) · A8 visible required marker · A9 skip link · manual keyboard Tab walkthrough of nav → forms in a browser nobody else is using
 
