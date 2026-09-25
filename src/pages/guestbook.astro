@@ -26,9 +26,20 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       entries.textContent = data.error || `HTTP ${res.status}`;
       return;
     }
-    entries.innerHTML = (data.entries || [])
-      .map((e) => `<p><strong>${e.name}</strong>: ${e.message}<br/><small>${e.created_at}</small></p>`)
-      .join('') || '<p>No entries yet.</p>';
+    const list = data.entries || [];
+    if (!list.length) {
+      entries.replaceChildren(Object.assign(document.createElement('p'), { textContent: 'No entries yet.' }));
+      return;
+    }
+    entries.replaceChildren(...list.map((e) => {
+      const p = document.createElement('p');
+      const name = document.createElement('strong');
+      name.textContent = e.name;
+      const when = document.createElement('small');
+      when.textContent = e.created_at;
+      p.append(name, `: ${e.message}`, document.createElement('br'), when);
+      return p;
+    }));
   }
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
