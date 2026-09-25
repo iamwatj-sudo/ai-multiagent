@@ -1,4 +1,4 @@
-﻿# QA — Personal Site
+# QA — Personal Site
 
 > Lab 06
 
@@ -118,7 +118,10 @@ P0 A1–A3 + P1 A4 add up to about 35 min in total; all are frontend (Claude `fr
 | F4 | ✅ Done (2026-09-25) | titles "Contact · name" / "Guestbook · name" |
 | F5 | ✅ Done (2026-09-25) | `.playwright-mcp/` in `.gitignore` |
 | A10 | ✅ Resolved | content is Thai now → `lang="th"` is correct |
-| — | `npm test` / `npm run build` | 6 passed (3 files) · build Complete · every page 200 |
+| A7 | ✅ Done (2026-09-25) | new `src/lib/form-errors.ts` (`fieldForError` + `tests/form-errors.test.ts` RED → GREEN) · both forms: every field has `aria-describedby` → `#<id>-error` · on a 400 the matching field gets `aria-invalid="true"`, the error text shows under it, and focus moves there; next submit clears it (Playwright: contact `name` "Name is required" → `email` "Email is invalid", guestbook `message` "Message is required") · errors not tied to a field still go to `role=status` |
+| A8 | ✅ Done (2026-09-25) | every label shows "(required)" (`aria-hidden`, because the `required` attribute is already announced) · contact 3 / guestbook 2 |
+| A9 | ✅ Done (2026-09-25) | `BaseLayout`: "Skip to content" is the first focusable element (hidden until focused) → `<main id="main" tabindex="-1">` · Playwright: first Tab focuses the skip link, Enter → focus on `main` |
+| — | `npm test` / `npm run build` | 9 passed (4 files) · build Complete · every page 200 · `course` / `lab 0` / `/api/` in markup = 0 |
 
-**Still open (P2):** A7 field-level errors (`aria-invalid` + `aria-describedby`) · A8 visible required marker · A9 skip link · manual keyboard Tab walkthrough of nav → forms in a browser nobody else is using
+**Still open:** manual keyboard Tab walkthrough of nav → forms in a browser nobody else is using (L5)
 

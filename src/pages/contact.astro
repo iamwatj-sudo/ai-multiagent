@@ -9,24 +9,29 @@ const profile = loadProfile();
     <h1>Contact</h1>
     <p>ส่งข้อความถึงผมได้ทางฟอร์มนี้ — กรอกให้ครบทุกช่อง</p>
     <form id="contact-form">
-      <label for="name">Name</label>
-      <input id="name" name="name" required maxlength="80" autocomplete="name" />
-      <label for="email">Email</label>
-      <input id="email" name="email" type="email" required maxlength="120" autocomplete="email" />
-      <label for="message">Message</label>
-      <textarea id="message" name="message" rows="5" required maxlength="2000"></textarea>
+      <label for="name">Name <span class="req" aria-hidden="true">(required)</span></label>
+      <input id="name" name="name" required maxlength="80" autocomplete="name" aria-describedby="name-error" />
+      <p id="name-error" class="field-error" hidden></p>
+      <label for="email">Email <span class="req" aria-hidden="true">(required)</span></label>
+      <input id="email" name="email" type="email" required maxlength="120" autocomplete="email" aria-describedby="email-error" />
+      <p id="email-error" class="field-error" hidden></p>
+      <label for="message">Message <span class="req" aria-hidden="true">(required)</span></label>
+      <textarea id="message" name="message" rows="5" required maxlength="2000" aria-describedby="message-error"></textarea>
+      <p id="message-error" class="field-error" hidden></p>
       <p style="margin-top:1rem"><button type="submit">Send</button></p>
       <p id="status" role="status" aria-live="polite"></p>
     </form>
   </section>
 </BaseLayout>
 <script>
+  import { clearFieldErrors, showFieldError } from '../lib/form-errors';
   const form = document.getElementById('contact-form');
   const status = document.getElementById('status');
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const fd = new FormData(form);
     const payload = Object.fromEntries(fd.entries());
+    clearFieldErrors(form);
     status.textContent = 'Sending…';
     try {
       const res = await fetch('/api/contact', {
@@ -35,8 +40,14 @@ const profile = loadProfile();
         body: JSON.stringify(payload),
       });
       const data = await res.json();
-      status.textContent = res.ok ? 'Sent. Thank you!' : `Error: ${data.error || res.status}`;
-      if (res.ok) form.reset();
+      if (res.ok) {
+        status.textContent = 'Sent. Thank you!';
+        form.reset();
+      } else if (showFieldError(form, data.error || '')) {
+        status.textContent = '';
+      } else {
+        status.textContent = `Error: ${data.error || res.status}`;
+      }
     } catch (err) {
       status.textContent = 'Network error';
     }

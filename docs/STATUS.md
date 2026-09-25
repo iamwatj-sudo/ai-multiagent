@@ -3,7 +3,7 @@
 > คัดลอกเป็น `docs/STATUS.md` ใน Lab 00 · อ่านทุก session · **สั้น** · single-writer ต่อรอบ  
 > ดู [`COURSE.md`](../COURSE.md) ชั้น State (Hot)
 
-Last updated: 2026-09-25 16:17 +07:00  
+Last updated: 2026-09-25 16:40 +07:00  
 Updated by: Claude
 
 ## Current goal
@@ -15,7 +15,9 @@ Updated by: Claude
 - Lab 05 (OpenCode): `src/lib/db.ts` persistence — `test:labs` เขียว (commit `30e1419`)
 - Lab 06 (Claude): E2E 14 steps + a11y debate + action items ใน `docs/QA.md` · screenshots ใน `docs/screenshots/`
 - แก้แล้ว: guestbook XSS (A1) · field border 3.31:1 + `:focus-visible` (A2/A3) · contact copy + autocomplete (A4) · guestbook status (A5) · meta description (A6) · `parseProfile` ตัดบรรทัด (F2 + `tests/profile.test.ts`) · titles (F4) · `.gitignore` `.playwright-mcp/` (F5)
-- `npm test` 6 passed · `npm run build` ผ่าน
+- a11y P2 (Claude): A7 field-level errors (`src/lib/form-errors.ts`) · A8 required marker · A9 skip link — verified with Playwright
+- `.gitignore`: `opencode.json` + `opencode.json.*` (local config/backup ที่อาจมี secret)
+- `npm test` 9 passed · `npm run build` ผ่าน
 
 ## In progress
 
@@ -28,14 +30,14 @@ Updated by: Claude
 ## Next actions
 
 1. เจ้าของ `docs/PROFILE.md` commit เนื้อหาใหม่ (ถูกแก้นอกเซสชัน Claude — Claude ไม่ได้ commit ให้)
-2. P2 a11y: A7–A9 (ดู `docs/QA.md`) + ทดสอบ Tab ด้วยมือบนเบราว์เซอร์ที่ไม่แชร์
+2. ทดสอบ Tab ด้วยมือบนเบราว์เซอร์ที่ไม่แชร์ (L5)
 3. (ทางเลือก) OpenCode: validate/strip HTML ใน guestbook API เป็น defense in depth
 
 ## Files changed in latest session
 
-- `src/layouts/BaseLayout.astro` · `src/pages/{index,about,contact,guestbook}.astro` · `src/lib/profile.ts`
-- `tests/profile.test.ts` · `.gitignore`
-- `docs/QA.md` · `docs/screenshots/*` · `docs/STATUS.md` · `docs/OPEN_LOOPS.md`
+- `src/layouts/BaseLayout.astro` · `src/pages/{contact,guestbook}.astro` · `src/lib/form-errors.ts` (ใหม่)
+- `tests/form-errors.test.ts` (ใหม่) · `.gitignore`
+- `docs/QA.md` · `docs/STATUS.md` · `docs/OPEN_LOOPS.md`
 
 ## Notes
 
