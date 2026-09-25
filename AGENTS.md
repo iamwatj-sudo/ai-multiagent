@@ -1,118 +1,83 @@
-# Agents — Build AI Multi-Agent Lab (V4) · seed
+# Agents — Build AI Multi-Agent Lab (V4)
 
-กติการ่วมสำหรับ **Claude Code** และ **OpenCode**  
-สินค้า = เว็บ personal branding (Astro) ใน root นี้
+กติการ่วม **Claude Code** ↔ **OpenCode** (อ่านทุกเซสชัน — `CLAUDE.md` ชี้มาที่ไฟล์นี้)
+สินค้า = เว็บ personal branding (Astro SSR) · repo เดียวกับ Labs 00–08
 
-หลัง Lab 00: `/init` แล้ว **merge** — อย่าลบ Ownership / สี่เสา / Native harness
+## Start-of-session (บังคับ)
 
-## สี่เสาหลัก
+1. อ่าน `docs/STATUS.md` + `docs/OPEN_LOOPS.md` (ยังไม่มี = คัดลอกจาก `*.md.example` ใน Lab 00)
+2. มี handoff ล่าสุดใน `docs/handoffs/` ที่ส่งถึงคุณ → อ่านด้วย
+3. สรุปก่อนลงมือ: Goal · Latest D-id · Open loops · Blockers — **ไม่เกิน 8 บรรทัด**
+4. **ห้าม**สมมุติสิ่งที่เกิดในแชทของ CLI อีกฝั่ง — ต้องมีใน `docs/` เท่านั้น
 
-1. **Multi-Agent** — หน้าที่และความจำแยก (ไฟล์ใน `.claude/agents/`, `.opencode/agents/` + คนละ CLI)  
-2. **Sub-Agent** — spawn ใช้แล้วทิ้ง; สิ่งที่ต้องจำต่อ = เขียนลง `docs/` เท่านั้น  
-3. **การประสานงาน** — handoff ผ่าน docs / issues / PR / review สำคัญกว่าแชทเดียว  
-4. **Swarm** — หลายตัวได้; **เพดาน 20 turns** แล้วหยุดสรุปช่องว่าง (Lab 05b)
+จบงานที่เปลี่ยนสถานะ: อัปเดต `STATUS.md` / `OPEN_LOOPS.md` · สลับ harness → เขียน handoff จาก `docs/handoffs/TEMPLATE.md`
 
-ใช้ skill **`public-site-safe`** ทุกงาน implement / swarm / ship
+## Commands (Windows PowerShell)
 
-## สี่ชั้นความรู้ (อ่านก่อนลงมือ)
+```powershell
+npm install                    # Node >= 22.12 (CI ใช้ Node 22)
+npm run dev                    # http://127.0.0.1:4321
+npm test                       # unit tests — ไม่รวม tests/labs
+npm run test:labs              # เฉพาะ tests/labs — RED ได้ถูกต้อง (ดูด้านล่าง)
+npm run test:e2e               # Playwright — ต้องรัน npm run dev ค้างไว้ก่อน (ไม่มี webServer ใน config)
+npm run build && npm start     # SSR build → node ./dist/server/entry.mjs
+node scripts/create-course-issues.mjs   # สร้าง Issues คอร์ส (ต้องมี GITHUB_PERSONAL_ACCESS_TOKEN ใน .env)
+```
 
-| ชั้น | ไฟล์หลัก |
-|---|---|
-| Rules | ไฟล์นี้ · `CLAUDE.md` · skill `public-site-safe` |
-| Context | `COURSE.md` · `docs/PROFILE.md` · `docs/DECISIONS.md` |
-| State (Hot) | `docs/STATUS.md` · `docs/OPEN_LOOPS.md` |
-| Artifacts | `src/` · tests · `docs/QA.md` · PR |
+## Test quirks (สิ่งที่ agent เดาผิดบ่อย)
 
-**Hot / Warm / Cold:** Hot = STATUS + OPEN_LOOPS + handoff ล่าสุด · Warm = PROFILE/DECISIONS/Ownership · Cold = `_cli-*` / logs เก่า  
-**Proposed vs Approved:** `DEBATE.md` = ยังไม่ปิด · `DECISIONS.md` = อนุมัติแล้วเท่านั้น
+- `npm test` **exclude** `tests/labs/**` · `test:labs` include เฉพาะ `tests/labs/**` — สองชุดไม่ซ้ำกัน
+- `tests/labs/lab05-api.test.ts` **ตั้งใจให้ RED บน template ล้าง** — `src/lib/db.ts` ยังเป็น stub ที่ throw `NOT_IMPLEMENTED` (Lab 05 ต้อง implement `insertContact` / `insertGuestbook` / `listGuestbook` ให้เขียว)
+- `tests/public-site.test.ts` สแกน **markup ที่ render ออกจริง** ทุก `.astro`/`.html` — ห้ามมีคำว่า "lab(s)" หรือ "แล็บ" อยู่ใน output (frontmatter/HTML comment ถูก strip ก่อนสแกน) · พูดถึง Lab ได้เฉพาะในคอมเมนต์ `.ts` / PR / `docs/`
+- CI (`.github/workflows/ci.yml`) = `npm ci` → `npm test` → `npm run build` บน push/PR สาย main — **ไม่รัน** lab tests และ E2E
+- Playwright: testDir `./playwright` · baseURL `http://127.0.0.1:4321` (override ด้วย `PLAYWRIGHT_BASE_URL`) · config ไม่มี `webServer` — ต้องสตาร์ท dev server เอง
 
-### Start-of-session (≤ 8 บรรทัด)
+## Architecture
 
-ก่อนเริ่มงานทุกครั้ง:
+- **Astro SSR** (`output: 'server'` + Node standalone adapter) — ไม่ใช่ static · port 4321 ตายตัวใน `astro.config.mjs`
+- API routes: `src/pages/api/{contact,guestbook,interests}.ts` — ใช้ `src/lib/db.ts` (better-sqlite3)
+- SQLite: ไฟล์ `$DATA_DIR/site.sqlite` (default `./data` — สร้างเองตอน first query, อย่า commit)
+- `src/lib/profile.ts` parse `docs/PROFILE.md` ด้วย heading ตรงตัว `## Name` / `## Headline` / `## Bio` / `## Audience` / `## Interests` — ขาดส่วนไหน fallback สาธารณะจะ render แทน (ห้ามมีคำว่า lab ใน fallback)
 
-1. อ่าน `docs/STATUS.md` และ `docs/OPEN_LOOPS.md`
-2. ถ้ามี handoff ล่าสุดใน `docs/handoffs/` ที่ส่งถึงคุณ — อ่านด้วย
-3. สรุปให้คนดู: Current goal · Latest D-id (ถ้ามี) · Open loops · Blockers — **ไม่เกิน 8 บรรทัด**
-4. ถ้าข้อมูลขัดแย้งระหว่างไฟล์ — หยุดวิเคราะห์ก่อนแก้โค้ด
-5. **ห้าม**สมมุติว่าคุณรู้สิ่งที่เกิดในแชทของ CLI อีกฝั่ง ถ้าไม่มีเขียนใน `docs/`
-
-จบงานที่เปลี่ยนสถานะ: อัปเดต `STATUS.md` / `OPEN_LOOPS.md` (และ handoff ถ้าสลับ harness)
-
-### Single-writer (ไฟล์ร่วมมีคนเขียนคนเดียวต่อรอบ)
-
-- `docs/STATUS.md` และ `docs/OPEN_LOOPS.md` มี **writer คนเดียวต่อรอบ** — สลับ Claude ↔ OpenCode หลัง commit หรือหลังเขียน handoff
-- Ownership โค้ดตามตารางด้านล่าง — reviewer อ่านอย่างเดียวจนกว่าจะโอนงานชัดใน handoff
-- อย่าให้สอง agent แก้ไฟล์เดียวกันพร้อมกันโดยไม่แยก branch
-
-## Ownership
+## Ownership (ผูกกับไฟล์ agent จริง)
 
 | Artifact | Owner |
 |---|---|
-| UI (`src/pages/*.astro`, `src/layouts/`, styles) | Claude · agent `frontend` |
-| API + SQLite (`src/lib/db.ts`, `src/pages/api/*`) | OpenCode · agent `backend` |
+| UI (`src/pages/*.astro`, `src/layouts/`, styles) | Claude · `.claude/agents/frontend.md` |
+| API + SQLite (`src/lib/db.ts`, `src/pages/api/*`) | OpenCode · `.opencode/agents/backend.md` |
 | E2E / a11y (`docs/QA.md`) | Playwright MCP + either CLI |
-| Profile / debate docs | Claude (Lab 01–02 · subagents) |
-| Hot state (`STATUS.md` · `OPEN_LOOPS.md`) | ผู้ถืองานรอบนั้น (single-writer) |
-| Handoffs (`docs/handoffs/`) | ผู้ส่งงานก่อนสลับ harness |
-| Review artifacts | Lab 07 · agent `reviewer` (Claude) / OpenCode review |
-| Ship (`docs/SHIP.md`) | Lab 08 |
+| PROFILE / DEBATE / DECISIONS docs | Claude (Lab 01–02 · subagents แล้วทิ้ง) |
+| Review | `.claude/agents/reviewer.md` / OpenCode review (Lab 07) |
 
-## ความจำ
+- **Single-writer** ต่อรอบสำหรับ `STATUS.md` / `OPEN_LOOPS.md` — สลับ Claude ↔ OpenCode หลัง commit หรือเขียน handoff
+- Proposed ≠ Approved: `DEBATE.md` ยังไม่ปิด · ปิดแล้วเท่านั้นลง `DECISIONS.md`
+- ใช้ skill **`public-site-safe`** ทุกงาน implement / swarm / ship (มีทั้ง `.claude/skills/` และ `.opencode/skills/`)
 
-| ชนิด | อยู่ที่ | ตัวอย่าง |
-|---|---|---|
-| ร่วม (shared) | `docs/`, git, PR | STATUS, OPEN_LOOPS, PROFILE, DECISIONS, QA, handoffs |
-| แยก (agent-local) | เซสชัน + ไฟล์ agent | frontend ไม่ถือ context backend |
-| **Harness persistent** | Claude / OpenCode native | ดูตารางด้านล่าง — **ห้ามสร้าง memory bus เอง — ใช้ของที่ harness มีให้** |
-| ทิ้งได้ | Sub-Agent รอบเดียว | Brand/UX/Devil หลังจบ Lab 02 |
+## Cross-harness call (Lab 04/05/07)
 
-### Harness persistent memory (ตรวจใน Lab 00)
+- ฝั่ง OpenCode เรียก `claude -p` · ฝั่ง Claude เรียก `opencode run` — headless **one-shot** เท่านั้น (ขั้นตอน: `.opencode/skills/claude-code/SKILL.md`)
+- ฝั่งที่ถูกเรียกเขียนได้**เฉพาะไฟล์รายงาน**ที่ prompt ระบุ (เช่น `docs/review-*.md`) — ห้ามแตะไฟล์ ownership ของผู้เรียก
+- ท่อ = ไฟล์ใน `docs/` · commit ก่อนให้อีก harness แตะ working tree
+- **ห้าม**: สร้าง message bus / daemon / loop ระหว่าง CLI · ใช้ MCP เป็นท่อส่งงาน
+- OpenCode persistent memory = `AGENTS.md` + agent file + **resume session** — ห้ามสร้าง memory bus เอง (ไม่ติดตั้ง Mem0 ฯลฯ) · Claude ใช้ `memory: project`
 
-| เครื่องมือ | ใช้ของอะไร | ตรวจยังไง |
-|---|---|---|
-| Claude Code | `memory: project` บน agent → `.claude/agent-memory/<name>/` · auto memory ผ่าน `/memory` | จำข้ามเซสชัน + มีไฟล์ MEMORY |
-| OpenCode | `AGENTS.md` + agent file + **resume session** | resume เห็นบริบท · เซสชันใหม่ไม่บังคับ recall ปากเปล่า |
+## Swarm (Lab 05b)
 
-ความจำร่วมของคอร์ส (`docs/`) คนละชั้นกับ harness memory — สิ่งที่ต้องโชว์ข้ามคน/CLI ให้เขียนลง docs  
-Adapter (ไฟล์กติกาที่แต่ละ CLI อ่าน — `AGENTS.md` / `CLAUDE.md`) ต้อง**ชี้ไป**ไฟล์กลาง — อย่าคัดลอกเนื้อหา STATUS/DECISIONS ซ้ำใน adapter
+หยุดเมื่อ done **หรือ** ครบ **20 turns** — แล้วสรุปช่องว่างลง `docs/SWARM.md` · ห้ามปล่อยรันเกิน
 
-## Workflow
+## Setup quirks
 
-```text
-00 Init → 01 Interview → 02 Debate → 03 Issues → 04 FE → 05 BE → 05b Swarm(≤20) → 06 QA → 07 Review → 08 Ship
-```
-
-## Native harness only
-
-harness = ความสามารถถาวรที่ Claude Code / OpenCode มีให้ในตัว (memory, plugin, session) — ใช้ของเดิม ไม่สร้างชั้นเอง
-
-- Plugins project scope: superpowers (oh-my-openagent ยังไม่รองรับ OpenCode v2 — ใช้ native agents)  
-- **Call ข้าม harness ทำได้** — แต่ละตัวยังรันบน harness ตนเอง: ฝั่ง OpenCode เรียก `claude -p` · ฝั่ง Claude เรียก `opencode run` (headless one-shot · ท่อ = ไฟล์ใน `docs/`)  
-- **กติกา call:** ฝั่งที่ถูกเรียกเขียนได้**เฉพาะไฟล์รายงาน**ที่ prompt ระบุ (เช่น `docs/review-*.md`) — ห้ามแตะไฟล์ ownership ของผู้เรียก · อย่าให้สอง harness เขียน working tree พร้อมกัน (commit ก่อน)  
-- ห้ามสร้างระบบส่งข้อความ/สถานะระหว่าง CLI เอง (เช่น ใช้ไฟล์ JSON เป็นท่อส่งงาน) · ห้าม daemon/loop ถาวร  
-- MCP = งานผลิต — **ไม่ใช่**ท่อระหว่างสอง CLI  
-- Swarm หยุดเมื่อ done **หรือ** ครบ **20 turns**
-
-## คำสั่งหลัก
-
-```powershell
-npm install
-npm run dev
-npm test
-npm run test:labs
-npm run build
-npm start
-node scripts/create-course-issues.mjs
-```
+- `copy .env.example .env` ก่อนใช้งาน — `.env` ห้าม commit · ค่าสำคัญ: `STUDENT_SLUG`, `SITE_URL` (astro config อ่านตอน build), `DATA_DIR`, `GITHUB_PERSONAL_ACCESS_TOKEN`
+- MCP (GitHub + Playwright): คัดลอก `opencode.json.example` → `opencode.json` · `.mcp.json.example` สำหรับ Claude
 
 ## ห้าม
 
-- Commit `.env`, PAT, Coolify webhook, `node_modules`
+- Commit `.env` / PAT / Coolify webhook / `node_modules` / `data/`
 - เคลม deploy สำเร็จโดยไม่มี URL 200 จริง
-- บังคับ tmux บน Windows
-- PR เข้า `Onto-IQ/*` — เข้า learner repo เท่านั้น
+- PR เข้า `Onto-IQ/*` — เข้า learner repo เท่านั้น (template คือ `Onto-IQ/build-ai-multi-agent-lab`)
+- บังคับ tmux บน Windows (Agent Teams ใช้ in-process)
 - ปล่อย swarm เกิน 20 turns โดยไม่สรุปหยุด
 
-## Labs
+## ชั้นความรู้ (อ่านตามงาน)
 
-[`SETUP.md`](./SETUP.md) → [`labs/lab-00-project-init`](./labs/lab-00-project-init/README.md) → [`labs/README.md`](./labs/README.md)
+Rules = ไฟล์นี้ + `CLAUDE.md` + skill `public-site-safe` · Context = `COURSE.md` / `docs/PROFILE.md` / `docs/DECISIONS.md` · Hot state = `docs/STATUS.md` / `docs/OPEN_LOOPS.md` · Labs ลำดับ = [`labs/README.md`](./labs/README.md)

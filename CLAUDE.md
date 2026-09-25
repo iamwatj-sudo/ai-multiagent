@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 @AGENTS.md
 
 # Claude Code — seed คอร์ส (อย่าลบตอน /init)
@@ -43,3 +47,29 @@
 ## Labs
 
 ดู [`labs/README.md`](labs/README.md) · เริ่ม [`lab-00-project-init`](labs/lab-00-project-init/README.md)
+
+---
+
+# Codebase notes (เพิ่มจาก /init)
+
+## Commands (Node ≥ 22.12)
+
+```powershell
+npm run dev                                   # astro dev → http://localhost:4321
+npm test                                      # vitest: tests/*.test.ts (ไม่รวม tests/labs)
+npm run test:labs                             # vitest: tests/labs/** — RED บน template สดจนกว่า Lab 05 เสร็จ
+npx vitest run tests/smoke.test.ts            # รันไฟล์เดียว · เพิ่ม -t "<ชื่อ test>" เพื่อกรอง
+npm run test:e2e                              # playwright/ · ต้องมี server รันที่ PLAYWRIGHT_BASE_URL (default 127.0.0.1:4321)
+npm run build; npm start                      # build → dist/server/entry.mjs (Node standalone)
+```
+
+CI (`.github/workflows/ci.yml`) รัน `npm ci` → `npm test` → `npm run build` — **ไม่**รัน `test:labs`
+
+## Architecture
+
+- **Astro SSR** (`output: 'server'`, `@astrojs/node` standalone) — Dockerfile → Coolify
+- **Content มาจาก markdown:** `src/lib/profile.ts` parse `docs/PROFILE.md` ตามหัวข้อ `## Name` / `## Headline` / `## Bio` / `## Audience` / `## Interests` (list) — ขาดหัวข้อไหนใช้ `FALLBACK` · แก้ PROFILE.md ต้องรักษาชื่อหัวข้อเหล่านี้
+- **API** (`src/pages/api/*.ts`, `prerender = false`) เรียก `src/lib/db.ts` (better-sqlite3 · `DATA_DIR` หรือ `./data/site.sqlite` · สร้างตารางตอน `getDb()`)
+  - `insertContact` / `listGuestbook` / `insertGuestbook` เป็น stub ที่ throw `NOT_IMPLEMENTED…` → route แปลงเป็น **501** · error อื่น → 400/500 (งาน Lab 05 · owner = OpenCode)
+- **Guard สำคัญ:** `tests/public-site.test.ts` สแกน markup ที่ render ได้ใน `src/**/*.astro|html` (ตัด frontmatter + HTML comment) — ห้ามมีคำว่า `lab 0x` / `แล็บ` บนหน้าเว็บ · fallback text ใน `profile.ts` ก็ต้องไม่อ้างถึงคอร์ส
+- `docs/STATUS.md` / `docs/OPEN_LOOPS.md` มาจากไฟล์ `.example` (คัดลอกใน Lab 00) · issue ของคอร์สอยู่ใน `.github/course-issues/` สร้างด้วย `node scripts/create-course-issues.mjs`
