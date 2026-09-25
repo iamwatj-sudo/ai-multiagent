@@ -1,18 +1,32 @@
 # PROFILE
 
 ## Name
-Your Name
+วัฒน์ (Wat)
 
 ## Headline
-Builder · learner · multi-agent course
+นักพัฒนาเว็บที่ใช้ AI agents ช่วยพาระบบ .NET รุ่นเก่าไปสู่ MVC
 
 ## Bio
-Replace this after Lab 01 interview.
+ผมเป็นนักพัฒนาเว็บสาย .NET ที่ใช้ AI agents เป็นผู้ช่วยหลักในการย้ายระบบเก่าให้ทันสมัย ทั้งเร็วขึ้นและปลอดภัยกว่าเดิม
+
+ผมเริ่มเขียนเว็บจาก ASP.NET ด้วย VB ได้เห็นระบบ Web Forms เติบโตจนกลายเป็นโค้ดที่ดูแลยาก ทุกวันนี้ผมเขียน C# เป็นหลัก
+
+งานที่ทำอยู่คือใช้ AI ช่วยอ่านโค้ด legacy วางแผน และทยอยแปลงโปรแกรมเก่าเป็นสถาปัตยกรรม MVC ทีละส่วน โดยมีคนตรวจทุกขั้น
+
+เว็บนี้รวบรวมบทเรียนและวิธีคิดจากงานจริง สำหรับคนที่กำลังจะเริ่มย้ายระบบแบบเดียวกัน
 
 ## Audience
-Peers and hiring managers
+นักพัฒนา .NET ที่กำลังคิดจะย้ายระบบเก่า (Web Forms / VB) ไปสู่ MVC หรือ ASP.NET Core
 
 ## Interests
-- AI agents
-- Web
-- Teaching
+- Legacy migration (Web Forms → MVC)
+- C# / ASP.NET Core
+- AI agents สำหรับงานเขียนโค้ด
+
+## Contact
+- email: demo@example.com
+- github: Wat
+
+## Tone
+- สีหลัก / บรรยากาศ: โทนสบายตา อ่านนานไม่ล้า
+- น้ำเสียง: มืออาชีพ ชัดเจน
