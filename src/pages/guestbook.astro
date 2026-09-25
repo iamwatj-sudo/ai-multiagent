@@ -1,46 +1,121 @@
 ---
 export const prerender = false;
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { loadProfile } from '../lib/profile';
+const profile = loadProfile();
+// Guestbook is Out of scope v1 (DECISIONS). The form starts disabled and is only enabled
+// when GET /api/guestbook answers 200. 501 (backend stub) → polite "not open" state.
+// Entries are rendered with textContent only (no innerHTML).
 ---
-<BaseLayout title="Guestbook">
+<BaseLayout title={`สมุดเยี่ยม · ${profile.name}`}>
   <section class="card">
-    <h1>Guestbook</h1>
-    <p>ฝากข้อความไว้ได้ทางฟอร์มนี้ — อ่าน/เขียนผ่าน <code>/api/guestbook</code></p>
+    <h1>สมุดเยี่ยม</h1>
+    <p>ฝากคำทักทายสั้น ๆ ไว้ได้ที่นี่</p>
+
+    <p id="gb-status" class="notice" role="status" aria-live="polite">กำลังโหลด…</p>
+
     <form id="gb-form">
-      <label for="name">Name</label>
-      <input id="name" name="name" required maxlength="80" />
-      <label for="message">Message</label>
-      <textarea id="message" name="message" rows="3" required maxlength="500"></textarea>
-      <p style="margin-top:1rem"><button type="submit">Sign</button></p>
+      <fieldset disabled>
+        <label for="gb-name">ชื่อ</label>
+        <input id="gb-name" name="name" required maxlength="80" autocomplete="name" />
+        <label for="gb-message">ข้อความ</label>
+        <textarea id="gb-message" name="message" rows="3" required maxlength="500"></textarea>
+        <p style="margin-top:1rem"><button type="submit">ฝากข้อความ</button></p>
+      </fieldset>
     </form>
-    <div id="entries" class="card" style="margin-top:1.25rem" aria-live="polite">Loading…</div>
+  </section>
+
+  <section class="card" aria-labelledby="gb-list-title">
+    <h2 id="gb-list-title">ข้อความล่าสุด</h2>
+    <ul id="gb-entries" class="entries"></ul>
   </section>
 </BaseLayout>
+
 <script>
-  const entries = document.getElementById('entries');
-  const form = document.getElementById('gb-form');
-  async function load() {
-    const res = await fetch('/api/guestbook');
-    const data = await res.json();
-    if (!res.ok) {
-      entries.textContent = data.error || `HTTP ${res.status}`;
+  type Entry = { name: string; message: string; created_at?: string };
+
+  const form = document.getElementById('gb-form') as HTMLFormElement | null;
+  const fieldset = form?.querySelector('fieldset') ?? null;
+  const status = document.getElementById('gb-status');
+  const list = document.getElementById('gb-entries');
+
+  const MESSAGES = {
+    closed: 'สมุดเยี่ยมยังไม่เปิดให้ฝากข้อความ',
+    loadFailed: 'โหลดข้อความไม่สำเร็จ ลองใหม่อีกครั้งภายหลัง',
+    empty: 'ยังไม่มีข้อความ',
+    sending: 'กำลังส่ง…',
+    thanks: 'ขอบคุณที่ฝากข้อความไว้',
+    invalid: 'ข้อมูลบางช่องยังไม่ถูกต้อง ลองตรวจอีกครั้ง',
+    failed: 'ส่งไม่สำเร็จ ลองใหม่อีกครั้งภายหลัง',
+  };
+
+  const say = (text: string) => { if (status) { status.textContent = text; status.hidden = !text; } };
+  const setOpen = (open: boolean) => { if (fieldset) fieldset.disabled = !open; };
+
+  function render(entries: Entry[]) {
+    if (!list) return;
+    list.replaceChildren();
+    if (!entries.length) {
+      const li = document.createElement('li');
+      li.textContent = MESSAGES.empty;
+      list.append(li);
       return;
     }
-    entries.innerHTML = (data.entries || [])
-      .map((e) => `<p><strong>${e.name}</strong>: ${e.message}<br/><small>${e.created_at}</small></p>`)
-      .join('') || '<p>No entries yet.</p>';
+    for (const e of entries) {
+      const li = document.createElement('li');
+      const name = document.createElement('strong');
+      name.textContent = String(e.name ?? '');
+      const msg = document.createElement('span');
+      msg.textContent = `: ${String(e.message ?? '')}`;
+      li.append(name, msg);
+      if (e.created_at) {
+        const time = document.createElement('small');
+        time.textContent = ` · ${String(e.created_at)}`;
+        li.append(time);
+      }
+      list.append(li);
+    }
   }
+
+  async function load() {
+    try {
+      const res = await fetch('/api/guestbook');
+      if (res.status === 501) { setOpen(false); say(MESSAGES.closed); render([]); return; }
+      if (!res.ok) { setOpen(false); say(MESSAGES.loadFailed); return; }
+      const data = (await res.json().catch(() => ({}))) as { entries?: Entry[] };
+      render(Array.isArray(data.entries) ? data.entries : []);
+      setOpen(true);
+      say('');
+    } catch {
+      setOpen(false);
+      say(MESSAGES.loadFailed);
+    }
+  }
+
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (!form.reportValidity()) return;
     const payload = Object.fromEntries(new FormData(form).entries());
-    await fetch('/api/guestbook', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    form.reset();
-    await load();
+    say(MESSAGES.sending);
+    try {
+      const res = await fetch('/api/guestbook', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.status === 501) { setOpen(false); say(MESSAGES.closed); return; }
+      if (!res.ok) { say(res.status === 400 ? MESSAGES.invalid : MESSAGES.failed); return; }
+      form.reset();
+      await load();
+      say(MESSAGES.thanks);
+    } catch {
+      say(MESSAGES.failed);
+    }
   });
+
   load();
 </script>
 
+<style>
+  .entries { padding-left: 1.2rem; }
+</style>

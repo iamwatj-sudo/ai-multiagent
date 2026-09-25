@@ -27,7 +27,9 @@ function stripNonRendered(text: string): string {
   return out.replace(/<!--[\s\S]*?-->/g, '');
 }
 
-const COURSE_LEAK_PATTERN = /\blabs?\b\s*[-–—]?\s*0?\d+\b|แล็บ/i;
+// D15: also catch course / workshop wording (EN + TH).
+const COURSE_LEAK_PATTERN =
+  /\blabs?\b\s*[-–—]?\s*0?\d+\b|แล็บ|\bcourses?\b|คอร์ส|\bworkshops?\b|เวิร์กช็อป/i;
 
 describe('public site must not leak course/lab references', () => {
   const files = collectMarkupFiles(join(process.cwd(), 'src'));

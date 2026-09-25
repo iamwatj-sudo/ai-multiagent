@@ -2,21 +2,41 @@
 export const prerender = false;
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { loadProfile } from '../lib/profile';
+import { CONTACT_FORM_OPEN } from '../lib/features';
 const profile = loadProfile();
 ---
-<BaseLayout title={`${profile.name} · Home`} description={profile.headline}>
-  <section class="card">
-    <p style="margin:0;color:var(--accent);font-weight:700">Personal branding site</p>
-    <h1>{profile.name}</h1>
-    <p style="font-size:1.2rem;color:var(--text)">{profile.headline}</p>
-    <p>{profile.bio}</p>
-    <p><strong>Audience:</strong> {profile.audience}</p>
+<BaseLayout title={`${profile.name} · ${profile.tagline}`} description={`${profile.tagline} — ${profile.headline}`}>
+  <!-- D3 hero: H1 = Tagline, subline = Headline, one CTA. D5: principle line from PROFILE, links to reviewer checklist. -->
+  <section class="hero" aria-labelledby="hero-title">
+    <h1 id="hero-title">{profile.tagline}</h1>
+    <p class="subline">{profile.headline}</p>
+    <p class="principle"><a href="/playbook#checklist">{profile.principle}</a></p>
+    <p><a class="btn" href="/playbook">อ่าน Playbook</a></p>
   </section>
-  <section class="grid">
-    <a class="card" href="/about"><h2>About</h2><p>เรื่องราวและเส้นทาง</p></a>
-    <a class="card" href="/interests"><h2>Interests</h2><p>หัวข้อที่สนใจ</p></a>
-    <a class="card" href="/contact"><h2>Contact</h2><p>ส่งข้อความถึงฉัน</p></a>
-    <a class="card" href="/guestbook"><h2>Guestbook</h2><p>ฝากคำทักทาย</p></a>
+
+  <section class="card" aria-labelledby="for-you">
+    <h2 id="for-you">เว็บนี้เขียนให้ใคร</h2>
+    <p>{profile.audience}</p>
   </section>
+
+  <section class="grid" aria-label="หน้าอื่น ๆ">
+    <a class="card" href="/about"><h2>เกี่ยวกับผม</h2><p>เส้นทางจาก VB สู่ C# และงานที่ทำอยู่</p></a>
+    <a class="card" href="/about#interests"><h2>เรื่องที่สนใจ</h2><p>หัวข้อที่ผมกำลังศึกษาและเขียนถึง</p></a>
+    <a class="card" href="/contact"><h2>ติดต่อ</h2><p>ช่องทางติดต่อผม</p></a>
+  </section>
+
+  {CONTACT_FORM_OPEN && (
+    <section class="card" aria-labelledby="ask">
+      <h2 id="ask">มีคำถามเรื่องการย้ายระบบ?</h2>
+      <p>ถามคำถาม หรือเสนอหัวข้อที่อยากให้เขียน</p>
+      <p><a class="btn" href="/contact">ถามผม</a></p>
+    </section>
+  )}
 </BaseLayout>
 
+<style>
+  .hero { padding: 1.5rem 0 1rem; }
+  .hero h1 { font-size: clamp(1.9rem, 6vw, 2.8rem); margin: 0 0 0.5rem; }
+  .subline { font-size: 1.25rem; color: var(--text); margin: 0 0 0.5rem; }
+  .principle { font-size: 0.95rem; margin: 0 0 1.25rem; }
+</style>

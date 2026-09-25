@@ -1,0 +1,1 @@
+- [Lab 04 plan from debate](project_lab04_plan.md) — D1 parser fix first, profile.ts ownership, handoffs, D7/D8/D10, Lab 04 UI done, D10 switch location (2026-09-25)
