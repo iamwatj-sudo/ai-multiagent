@@ -123,5 +123,7 @@ P0 A1–A3 + P1 A4 add up to about 35 min in total; all are frontend (Claude `fr
 | A9 | ✅ Done (2026-09-25) | `BaseLayout`: "Skip to content" is the first focusable element (hidden until focused) → `<main id="main" tabindex="-1">` · Playwright: first Tab focuses the skip link, Enter → focus on `main` |
 | — | `npm test` / `npm run build` | 9 passed (4 files) · build Complete · every page 200 · `course` / `lab 0` / `/api/` in markup = 0 |
 
-**Still open:** manual keyboard Tab walkthrough of nav → forms in a browser nobody else is using (L5)
+| L5 | ✅ Done (2026-09-25) | Playwright real keyboard `Tab` on `/contact` and `/guestbook` from the top of the page: Skip to content → Home → About → Interests → Contact → Guestbook → fields → Send/Sign. Every stop is `:focus-visible` with a solid accent outline; no `astro-dev-toolbar` stop this time |
+
+**Still open:** none for Lab 06 · optional L6 (backend HTML validation, OpenCode)
 

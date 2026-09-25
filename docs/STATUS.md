@@ -3,7 +3,7 @@
 > คัดลอกเป็น `docs/STATUS.md` ใน Lab 00 · อ่านทุก session · **สั้น** · single-writer ต่อรอบ  
 > ดู [`COURSE.md`](../COURSE.md) ชั้น State (Hot)
 
-Last updated: 2026-09-25 16:40 +07:00  
+Last updated: 2026-09-25 16:50 +07:00  
 Updated by: Claude
 
 ## Current goal
@@ -17,6 +17,7 @@ Updated by: Claude
 - แก้แล้ว: guestbook XSS (A1) · field border 3.31:1 + `:focus-visible` (A2/A3) · contact copy + autocomplete (A4) · guestbook status (A5) · meta description (A6) · `parseProfile` ตัดบรรทัด (F2 + `tests/profile.test.ts`) · titles (F4) · `.gitignore` `.playwright-mcp/` (F5)
 - a11y P2 (Claude): A7 field-level errors (`src/lib/form-errors.ts`) · A8 required marker · A9 skip link — verified with Playwright
 - `.gitignore`: `opencode.json` + `opencode.json.*` (local config/backup ที่อาจมี secret)
+- `docs/PROFILE.md` เนื้อหาจริง commit แล้ว (`8f3454b`) · Tab walkthrough ผ่านทั้ง `/contact` และ `/guestbook`
 - `npm test` 9 passed · `npm run build` ผ่าน
 
 ## In progress
@@ -29,9 +30,8 @@ Updated by: Claude
 
 ## Next actions
 
-1. เจ้าของ `docs/PROFILE.md` commit เนื้อหาใหม่ (ถูกแก้นอกเซสชัน Claude — Claude ไม่ได้ commit ให้)
-2. ทดสอบ Tab ด้วยมือบนเบราว์เซอร์ที่ไม่แชร์ (L5)
-3. (ทางเลือก) OpenCode: validate/strip HTML ใน guestbook API เป็น defense in depth
+1. Lab 07 (review) / ship
+2. (ทางเลือก) OpenCode: validate/strip HTML ใน guestbook API เป็น defense in depth
 
 ## Files changed in latest session
 
